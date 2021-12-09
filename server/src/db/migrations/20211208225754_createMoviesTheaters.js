@@ -10,7 +10,7 @@ exports.up = function(knex) {
         table
             .foreign("theater_id")
             .references("theater_id")
-            .inTable("theater")
+            .inTable("theaters")
             .onDelete("CASCADE");
         table.boolean("is_showing");
     })

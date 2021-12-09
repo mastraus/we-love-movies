@@ -22,7 +22,28 @@ async function movieExists(req, res, next) {
     return next({ status: 404, message: `Movie cannot be found.` });
   }
 
+  //only lists movies currently showing (is showing = true)
+async function listOnlyShowing(req, res, next) {
+  const data = await service.listOnlyShowing();
+  res.json({ data });
+}
+
+//returns theaters with a specific movie ID
+async function theatersWithMovie(req, res, next) {
+  const data = await service.theatersWithMovie();
+  res.json({ data });
+}
+
+//should return the reviews for a specific movie with the critic properties set as a key
+async function criticReview(req, res, next) {
+  const data = await service.criticReview();
+  res.json({ data })
+}
+
 module.exports = {
-  list: asyncErrorBoundary(list),
+  list: [asyncErrorBoundary(list)],
   read: [asyncErrorBoundary(movieExists), read],
+  listOnlyShowing: asyncErrorBoundary(listOnlyShowing),
+  theatersWithMovie: [asyncErrorBoundary(movieExists), asyncErrorBoundary(theatersWithMovie)],
+  criticReview: [asyncErrorBoundary(movieExists), asyncErrorBoundary(criticReview)]
 };

@@ -12,15 +12,32 @@ function read(movieId) {
 
 //returns only the movies that are currently playing in theaters, so will need to reference the movies_theaters table instead
 function listOnlyShowing() {
-    return knex("comments as c")
-      .join ("users as u", "u.user_id", "c.commenter_id")
-      .join ("posts as p", "p.post_id", "c.post_id")
-      .select("c.comment_id", "c.comment", "u.user_email as commenter_email", "p.post_body as commented_post")
-      .where({ "c.comment_id": commentId})
-      .then((comment) => comment[0])
+    return knex("movies as m")
+      .join ("movies_theaters as mt", "m.movie_id", "mt.movie_id")
+      .select("m.*")
+      .then((movie) => movie[0])
   }
+
+//returns theaters with specific movie ID
+function theatersWithMovie(movieId) {
+  return knex("movies_theaters as mt")
+    .join ("movies as m", "m.movie_id", "mt.movie_id")
+    .join ("theaters as t", "t.theater_id", "mt.theater.id")
+    .select("t.*")
+    .then((theater) => theater[0])
+}
+//pulls the reviews of a movie and the critic's information
+function criticReview(movieId) {
+  return knex("reviews as r")
+    .join ("movies as m", "m.movie_id", "r.movie_id")
+    .join ("critics as c", "c.critic_id", "r.critic_id")
+    .select ("r.*", "c.*")
+}
 
 module.exports = {
   list,
   read,
+  listOnlyShowing,
+  theatersWithMovie,
+  criticReview,
 };
