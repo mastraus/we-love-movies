@@ -27,4 +27,5 @@ function destroy(review_id) {
       read,
       update,
       destroy,
+      readReviewCritic,
   }
