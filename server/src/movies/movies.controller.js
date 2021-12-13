@@ -1,15 +1,22 @@
 const service = require("./movies.service");
 const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
+const {as} = require("../db/connection");
 
 async function list(req, res, next) {
-    res.json({ data: await service.list() });
+  const { is_showing } = req.query;
+  let data;
+  if (is_showing == "true"){
+    data = await service.listOnlyShowing()
+    res.json({ data });
+  }     
+  data = await service.list();
+  res.json({ data });
 }
 
 async function read(req, res, next) {
-    const knexInstance = req.app.get("db");
-    const { movie } = res.locals;
-    res.json({ data: movie });
-  }
+  const { movie: data } = res.locals;
+  res.json({ data });
+}
 
   //checks to see if movie exists
 async function movieExists(req, res, next) {
@@ -22,28 +29,21 @@ async function movieExists(req, res, next) {
     return next({ status: 404, message: `Movie cannot be found.` });
   }
 
-  //only lists movies currently showing (is showing = true)
-async function listOnlyShowing(req, res, next) {
-  const data = await service.listOnlyShowing();
-  res.json({ data });
-}
-
 //returns theaters with a specific movie ID
 async function theatersWithMovie(req, res, next) {
-  const data = await service.theatersWithMovie();
+  const data = await service.theatersWithMovie(res.locals.movie.movie_id);
   res.json({ data });
 }
 
 //should return the reviews for a specific movie with the critic properties set as a key
 async function criticReview(req, res, next) {
-  const data = await service.criticReview();
-  res.json({ data })
+  const { movie_id } = res.locals.movie;
+  res.json({ data: await service.criticReview(movie_id) });
 }
 
 module.exports = {
-  list: [asyncErrorBoundary(list)],
+  list: asyncErrorBoundary(list),
   read: [asyncErrorBoundary(movieExists), read],
-  listOnlyShowing: asyncErrorBoundary(listOnlyShowing),
   theatersWithMovie: [asyncErrorBoundary(movieExists), asyncErrorBoundary(theatersWithMovie)],
-  criticReview: [asyncErrorBoundary(movieExists), asyncErrorBoundary(criticReview)]
+  criticReview: [asyncErrorBoundary(movieExists), asyncErrorBoundary(criticReview)],
 };
